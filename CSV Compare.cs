@@ -1,4 +1,5 @@
 using System.Data;
+using System.Net.Http.Headers;
 using System.Windows.Forms.Design.Behavior;
 
 namespace csvcompare
@@ -11,9 +12,13 @@ namespace csvcompare
         }
         string fileName1 = "";
         string fileName2 = "";
+        List<int> selectedColumns1 = new List<int>();
+        List<int> selectedColumns2 = new List<int>();
+        bool associatedState;
 
         private void importButton_Click(object sender, EventArgs e)
         {
+            
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.Filter = "Comma-separated values | *.csv";
             ofd.Multiselect = false;
@@ -21,6 +26,7 @@ namespace csvcompare
             ofd.DefaultExt = ".csv";
             if (ofd.ShowDialog() == DialogResult.OK)
             {
+                switchButton.Visible = false;
                 fileName1 = ofd.FileName;
                 StreamReader sr = new StreamReader(fileName1);
                 handleData(sr.ReadToEnd());
@@ -52,8 +58,26 @@ namespace csvcompare
             List<string[]> separatedLinesAndRows2 = new List<string[]>();
             int len1 = 0, len2 = 0, width1, width2;
 
-            string[] separatedLines1 = data1.Split('\n');
-            string[] separatedLines2 = data2.Split('\n');
+            string[] separatedLines1un = data1.Split('\n');
+            string[] separatedLines2un = data2.Split('\n');
+            List<string> separatedLines1 = new List<string>();
+            List<string> separatedLines2 = new List<string>();
+
+            foreach (string s in separatedLines1un)
+            {
+                if (s.Length > 0) { separatedLines1.Add(s); }
+            }
+            foreach (string s in separatedLines2un)
+            {
+                if (s.Length > 0) { separatedLines2.Add(s); }
+            }
+            dataGridView1.Rows.Clear();
+            dataGridView1.Columns.Clear();
+            dataGridView1.Refresh();
+            dataGridView2.Rows.Clear();
+            dataGridView2.Columns.Clear();
+            dataGridView2.Refresh();
+            dataGridView1.SelectionMode = dataGridView2.SelectionMode = DataGridViewSelectionMode.RowHeaderSelect;
 
             foreach (string s in separatedLines1)
                 separatedLinesAndRows1.Add(s.Split(','));
@@ -62,7 +86,6 @@ namespace csvcompare
 
             width1 = separatedLinesAndRows1[0].Length;
             width2 = separatedLinesAndRows2[0].Length;
-
             for (len1 = 1; len1 <= width1; len1++)
             {
                 dataGridView1.Columns.Add(len1.ToString(), len1.ToString());
@@ -71,14 +94,20 @@ namespace csvcompare
             {
                 dataGridView2.Columns.Add(len2.ToString(), len2.ToString());
             }
-            separatedLinesAndRows1.RemoveAt(len1 - 2);
-            separatedLinesAndRows2.RemoveAt(len2 - 2);
+            foreach (DataGridViewColumn dataGridViewColumn in dataGridView1.Columns)
+            {
+                dataGridViewColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            foreach (DataGridViewColumn dataGridViewColumn in dataGridView2.Columns)
+            {
+                dataGridViewColumn.SortMode = DataGridViewColumnSortMode.NotSortable;
+            }
+            dataGridView1.SelectionMode = dataGridView2.SelectionMode = DataGridViewSelectionMode.FullColumnSelect;
 
             foreach (string[] strings in separatedLinesAndRows1)
                 dataGridView1.Rows.Add(strings);
             foreach (string[] strings in separatedLinesAndRows2)
                 dataGridView2.Rows.Add(strings);
-
         }
 
         private void compareButton_Click(object sender, EventArgs e)
@@ -102,6 +131,7 @@ namespace csvcompare
 
                 compareButton.Visible = false;
                 compareSelectedButton.Visible = true;
+                //MessageBox.Show("Select one cell in a column in the first table, switch to the second and select one cell there");
             }
         }
 
@@ -121,33 +151,170 @@ namespace csvcompare
 
         private void compareSelectedButton_Click(object sender, EventArgs e)
         {
-            int selectedColumn1 = dataGridView1.SelectedColumns[0].Index;
-            int selectedColumn2 = dataGridView2.SelectedColumns[0].Index;
-
             SelectionParameters selectionParameters = new SelectionParameters();
 
             if (selectionParameters.ShowDialog() == DialogResult.OK)
             {
                 bool numbersOnly = selectionParameters.numCheckState;
                 bool lowerCase = selectionParameters.lowerCaseState;
+                associatedState = selectionParameters.associatedState;
 
                 if (numbersOnly)
                 {
-                    foreach (DataRow row in dataGridView1.Rows)
+                    List<List<string>> numbers1 = new List<List<string>>();
+                    List<List<string>> numbers2 = new List<List<string>>();
+                    for (int x = 0; x < selectedColumns1.Count; x++)
                     {
-                        char[] strRow = row[selectedColumn1].ToString().ToCharArray();
-                        for (int i = 0; i<strRow.Length; i++)
+                        numbers1.Add([]);
+                        numbers2.Add([]);
+                        foreach (DataGridViewRow row in dataGridView1.Rows)
                         {
-                            if (Char.IsLetter(strRow[i]) || strRow[i] == '-' || strRow[i] == '_')
+                            char[] strRow = row.Cells[selectedColumns1[x]].Value.ToString().ToCharArray();
+                            string value = "";
+                            for (int i = 0; i < strRow.Length; i++)
                             {
-                                strRow[i] = '0';
+                                if (!Char.IsDigit(strRow[i]))
+                                {
+                                    strRow[i] = '0';
+                                }
                             }
+                            foreach (char c in strRow) value += c;
+                            numbers1[x].Add((long.Parse(value)).ToString());
+                        }
+
+                        foreach (DataGridViewRow row in dataGridView2.Rows)
+                        {
+                            char[] strRow = row.Cells[selectedColumns2[x]].Value.ToString().ToCharArray();
+                            string value = "";
+                            for (int i = 0; i < strRow.Length; i++)
+                            {
+                                if (!Char.IsDigit(strRow[i]))
+                                {
+                                    strRow[i] = '0';
+                                }
+                            }
+                            foreach (char c in strRow) value += c;
+                            numbers2[x].Add((long.Parse(value)).ToString());
                         }
                     }
-                    int[] numbers1 = 
+                    if (outputResultToFileButton.Checked)
+                    {
+                        SaveFileDialog sfd = new SaveFileDialog();
+                        sfd.DefaultExt = ".txt";
+                        string outputFileName;
+                        if (sfd.ShowDialog() == DialogResult.OK)
+                        {
+                            outputFileName = sfd.FileName;
+                            List<string[]> strings = new List<string[]>();
+                            StreamWriter sw = new StreamWriter(outputFileName);
+                            strings.Add(compare(numbers1, numbers2).Split('\n'));
+                            foreach (string[] list in strings)
+                            {
+                                foreach (string line in list)
+                                {
+                                    sw.WriteLine(line);
+                                }
+                            }
+                            sw.Close();
+                        }
+                    }
+                    else
+                    {
+                        Result result = new Result();
+                        result.resultText = compare(numbers1, numbers2).ToString();
+                        numbers1 = numbers2 = [[]];
+                        if (result.ShowDialog() == DialogResult.OK)
+                        {
+                            compareButton.Visible = true;
+                            compareSelectedButton.Visible = false;
+                        }
+                    }
                 }
             }
 
+        }
+
+        private string compare(List<List<string>> values1, List<List<string>> values2)
+        {
+            string result = string.Empty;
+            SelectionParameters selectionParameters = new SelectionParameters();
+            int column = 0;
+            //MessageBox.Show(associatedState.ToString());
+            if (!associatedState)
+            {
+                for (int h = 0; h < selectedColumns1.Count; h++)
+                {
+                    column = selectedColumns1[h];
+                    for (int i = 0; i < values2[h].Count; i++)
+                    {
+                        if (!values1[h].Contains(values2[h][i]))
+                        {
+                            result += "Missing value detected in the first table: " + dataGridView2.Rows[i].Cells[column].Value + "\n";
+                        }
+                    }
+                    for (int i = 0; i < values1[h].Count; i++) //cycling through the column (h)
+                    {
+                        if (!values2[h].Contains(values1[h][i]))
+                        {
+                            result += "Missing value detected in the second table: " + dataGridView1.Rows[i].Cells[column].Value + "\n";
+                        }
+                    }
+                }
+            }
+            else
+            {
+                column = selectedColumns1[0];
+                for (int i = 0; i < values2[0].Count-1; i++)
+                {
+                    if (!values1[0].Contains(values2[0][i])) //cycling through the column (h)
+                    {
+                        result += "Missing value detected in the first table: " + dataGridView2.Rows[i].Cells[column].Value + "\n";
+                    }
+                    else
+                    {
+                        //MessageBox.Show(values1.Count.ToString());
+                        if (values1.Count == 2)
+                        {
+                            if (values1[1][(values1[0].FindIndex(a => a.Contains(values2[0][i])))] != values2[1][i])
+                            {
+                                result += "First associated value at row " + i.ToString() + " is different\n";
+                                MessageBox.Show("diff: " + values1[1][(values1[0].IndexOf(values2[0][i]))] + " " + values2[1][i]);
+                            }
+                        }
+                        else if (values1.Count == 3)
+                        {
+                            if (values1[2][(values1[2].FindIndex(a => a.Contains(values2[0][i])))] != values2[2][i]) //check if associated value is different (2)
+                            {
+                                result += "Second associated value at row " + i.ToString() + " is different\n";
+
+                            }
+                        }
+                        else if (values1.Count == 4)
+                        {
+                            if (values1[3][(values1[3].FindIndex(a => a.Contains(values2[0][i])))] != values2[3][i]) //check if associated value is different (3)
+                            {
+                                result += "Third associated value at row " + i.ToString() + " is different\n";
+                            }
+                        }
+                        else
+                        {
+                            MessageBox.Show("Unsupported amount of columns selected, select more than one and lower than four columns");
+                            break;
+                        }
+                    }
+                }
+            }
+            return result;
+        }
+
+        private void dataGridView2_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            selectedColumns2.Add(e.ColumnIndex);
+        }
+
+        private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            selectedColumns1.Add(e.ColumnIndex);
         }
     }
 }

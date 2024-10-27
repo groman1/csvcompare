@@ -30,6 +30,8 @@
         {
             numCheckBox = new CheckBox();
             lowerCaseBox = new CheckBox();
+            confirmButton = new Button();
+            associateBox = new CheckBox();
             SuspendLayout();
             // 
             // numCheckBox
@@ -56,11 +58,35 @@
             lowerCaseBox.UseVisualStyleBackColor = true;
             lowerCaseBox.CheckedChanged += lowerCaseBox_CheckedChanged;
             // 
+            // confirmButton
+            // 
+            confirmButton.Location = new Point(12, 87);
+            confirmButton.Name = "confirmButton";
+            confirmButton.Size = new Size(315, 23);
+            confirmButton.TabIndex = 2;
+            confirmButton.Text = "Confirm";
+            confirmButton.UseVisualStyleBackColor = true;
+            confirmButton.Click += confirmButton_Click;
+            // 
+            // associateBox
+            // 
+            associateBox.AutoSize = true;
+            associateBox.Location = new Point(12, 62);
+            associateBox.Name = "associateBox";
+            associateBox.Size = new Size(315, 19);
+            associateBox.TabIndex = 3;
+            associateBox.Text = "Associate values from the second column with the first";
+            associateBox.TextAlign = ContentAlignment.MiddleCenter;
+            associateBox.UseVisualStyleBackColor = true;
+            associateBox.CheckedChanged += associateBox_CheckedChanged;
+            // 
             // SelectionParameters
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(193, 70);
+            ClientSize = new Size(339, 116);
+            Controls.Add(associateBox);
+            Controls.Add(confirmButton);
             Controls.Add(lowerCaseBox);
             Controls.Add(numCheckBox);
             Name = "SelectionParameters";
@@ -73,5 +99,7 @@
 
         private CheckBox numCheckBox;
         private CheckBox lowerCaseBox;
+        private Button confirmButton;
+        private CheckBox associateBox;
     }
 }

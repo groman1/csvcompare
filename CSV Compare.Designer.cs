@@ -34,6 +34,7 @@
             dataGridView2 = new DataGridView();
             switchButton = new Button();
             compareSelectedButton = new Button();
+            outputResultToFileButton = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)dataGridView1).BeginInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).BeginInit();
             SuspendLayout();
@@ -48,13 +49,16 @@
             dataGridView1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView1.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridView1.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dataGridView1.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dataGridView1.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView1.ColumnHeadersVisible = false;
             dataGridView1.Location = new Point(-1, 29);
             dataGridView1.Name = "dataGridView1";
             dataGridView1.ReadOnly = true;
             dataGridView1.RowHeadersVisible = false;
             dataGridView1.Size = new Size(802, 424);
             dataGridView1.TabIndex = 0;
+            dataGridView1.CellMouseClick += dataGridView1_CellMouseClick;
             // 
             // importButton
             // 
@@ -86,7 +90,9 @@
             dataGridView2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             dataGridView2.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.AllCells;
             dataGridView2.AutoSizeRowsMode = DataGridViewAutoSizeRowsMode.AllCells;
+            dataGridView2.ColumnHeadersBorderStyle = DataGridViewHeaderBorderStyle.None;
             dataGridView2.ColumnHeadersHeightSizeMode = DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridView2.ColumnHeadersVisible = false;
             dataGridView2.Location = new Point(-1, 29);
             dataGridView2.Name = "dataGridView2";
             dataGridView2.ReadOnly = true;
@@ -94,9 +100,11 @@
             dataGridView2.Size = new Size(802, 424);
             dataGridView2.TabIndex = 3;
             dataGridView2.Visible = false;
+            dataGridView2.CellMouseClick += dataGridView2_CellMouseClick;
             // 
             // switchButton
             // 
+            switchButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             switchButton.Location = new Point(705, 1);
             switchButton.Name = "switchButton";
             switchButton.Size = new Size(94, 24);
@@ -117,11 +125,23 @@
             compareSelectedButton.Visible = false;
             compareSelectedButton.Click += compareSelectedButton_Click;
             // 
+            // outputResultToFileButton
+            // 
+            outputResultToFileButton.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            outputResultToFileButton.AutoSize = true;
+            outputResultToFileButton.Location = new Point(201, 6);
+            outputResultToFileButton.Name = "outputResultToFileButton";
+            outputResultToFileButton.Size = new Size(138, 19);
+            outputResultToFileButton.TabIndex = 6;
+            outputResultToFileButton.Text = "Output result to a file";
+            outputResultToFileButton.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(outputResultToFileButton);
             Controls.Add(compareSelectedButton);
             Controls.Add(switchButton);
             Controls.Add(dataGridView2);
@@ -133,6 +153,7 @@
             ((System.ComponentModel.ISupportInitialize)dataGridView1).EndInit();
             ((System.ComponentModel.ISupportInitialize)dataGridView2).EndInit();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -142,5 +163,6 @@
         private DataGridView dataGridView2;
         private Button switchButton;
         private Button compareSelectedButton;
+        private CheckBox outputResultToFileButton;
     }
 }
