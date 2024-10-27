@@ -131,7 +131,6 @@ namespace csvcompare
 
                 compareButton.Visible = false;
                 compareSelectedButton.Visible = true;
-                //MessageBox.Show("Select one cell in a column in the first table, switch to the second and select one cell there");
             }
         }
 
@@ -237,15 +236,14 @@ namespace csvcompare
         private string compare(List<List<string>> values1, List<List<string>> values2)
         {
             string result = string.Empty;
-            SelectionParameters selectionParameters = new SelectionParameters();
             int column = 0;
-            //MessageBox.Show(associatedState.ToString());
+
             if (!associatedState)
             {
                 for (int h = 0; h < selectedColumns1.Count; h++)
                 {
                     column = selectedColumns1[h];
-                    for (int i = 0; i < values2[h].Count; i++)
+                    for (int i = 0; i < values2[h].Count; i++) //cycling through the column (h)
                     {
                         if (!values1[h].Contains(values2[h][i]))
                         {
@@ -272,16 +270,14 @@ namespace csvcompare
                     }
                     else
                     {
-                        //MessageBox.Show(values1.Count.ToString());
-                        if (values1.Count == 2)
+                        if (values1.Count == 2) //if one associated value is detected
                         {
                             if (values1[1][(values1[0].FindIndex(a => a.Contains(values2[0][i])))] != values2[1][i])
                             {
                                 result += "First associated value at row " + i.ToString() + " is different\n";
-                                MessageBox.Show("diff: " + values1[1][(values1[0].IndexOf(values2[0][i]))] + " " + values2[1][i]);
                             }
                         }
-                        else if (values1.Count == 3)
+                        else if (values1.Count == 3) //if two associated values are detected
                         {
                             if (values1[2][(values1[2].FindIndex(a => a.Contains(values2[0][i])))] != values2[2][i]) //check if associated value is different (2)
                             {
@@ -289,7 +285,7 @@ namespace csvcompare
 
                             }
                         }
-                        else if (values1.Count == 4)
+                        else if (values1.Count == 4) //if three associated values are detected
                         {
                             if (values1[3][(values1[3].FindIndex(a => a.Contains(values2[0][i])))] != values2[3][i]) //check if associated value is different (3)
                             {
@@ -309,12 +305,16 @@ namespace csvcompare
 
         private void dataGridView2_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            selectedColumns2.Add(e.ColumnIndex);
+            selectedColumns2 = [];
+            for (int i = 0; i < dataGridView2.SelectedColumns.Count; i++)
+                selectedColumns2.Add(dataGridView2.SelectedColumns[dataGridView2.SelectedColumns.Count - 1 -i].Index);
         }
 
         private void dataGridView1_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
         {
-            selectedColumns1.Add(e.ColumnIndex);
+            selectedColumns1 = [];
+            for (int i = 0; i < dataGridView1.SelectedColumns.Count; i++)
+                selectedColumns1.Add(dataGridView1.SelectedColumns[dataGridView1.SelectedColumns.Count - 1 - i].Index);
         }
     }
 }
