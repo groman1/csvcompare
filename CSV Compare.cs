@@ -15,6 +15,7 @@ namespace csvcompare
         List<int> selectedColumns1 = new List<int>();
         List<int> selectedColumns2 = new List<int>();
         bool associatedState;
+        //private string compare(List<List<string>>, List<List<string>>);
 
         private void importButton_Click(object sender, EventArgs e)
         {
@@ -157,11 +158,12 @@ namespace csvcompare
                 bool numbersOnly = selectionParameters.numCheckState;
                 bool lowerCase = selectionParameters.lowerCaseState;
                 associatedState = selectionParameters.associatedState;
+                List<List<string>> numbers1 = new List<List<string>>();
+                List<List<string>> numbers2 = new List<List<string>>();
 
                 if (numbersOnly)
                 {
-                    List<List<string>> numbers1 = new List<List<string>>();
-                    List<List<string>> numbers2 = new List<List<string>>();
+                    
                     for (int x = 0; x < selectedColumns1.Count; x++)
                     {
                         numbers1.Add([]);
@@ -196,37 +198,55 @@ namespace csvcompare
                             numbers2[x].Add((long.Parse(value)).ToString());
                         }
                     }
-                    if (outputResultToFileButton.Checked)
+                }
+                else
+                {
+                    for (int x = 0; x < selectedColumns1.Count; x++)
                     {
-                        SaveFileDialog sfd = new SaveFileDialog();
-                        sfd.DefaultExt = ".txt";
-                        string outputFileName;
-                        if (sfd.ShowDialog() == DialogResult.OK)
+                        numbers1.Add([]);
+                        numbers2.Add([]);
+                        foreach (DataGridViewRow row in dataGridView1.Rows)
                         {
-                            outputFileName = sfd.FileName;
-                            List<string[]> strings = new List<string[]>();
-                            StreamWriter sw = new StreamWriter(outputFileName);
-                            strings.Add(compare(numbers1, numbers2).Split('\n'));
-                            foreach (string[] list in strings)
-                            {
-                                foreach (string line in list)
-                                {
-                                    sw.WriteLine(line);
-                                }
-                            }
-                            sw.Close();
+                            numbers1[x].Add(row.Cells[selectedColumns1[x]].Value.ToString());
+                            
+                        }
+
+                        foreach (DataGridViewRow row in dataGridView2.Rows)
+                        {
+                            numbers2[x].Add(row.Cells[selectedColumns2[x]].Value.ToString());
                         }
                     }
-                    else
+                }
+                if (outputResultToFileButton.Checked)
+                {
+                    SaveFileDialog sfd = new SaveFileDialog();
+                    sfd.DefaultExt = ".txt";
+                    string outputFileName;
+                    if (sfd.ShowDialog() == DialogResult.OK)
                     {
-                        Result result = new Result();
-                        result.resultText = compare(numbers1, numbers2).ToString();
-                        numbers1 = numbers2 = [[]];
-                        if (result.ShowDialog() == DialogResult.OK)
+                        outputFileName = sfd.FileName;
+                        List<string[]> strings = new List<string[]>();
+                        StreamWriter sw = new StreamWriter(outputFileName);
+                        strings.Add(compare(numbers1, numbers2).Split('\n'));
+                        foreach (string[] list in strings)
                         {
-                            compareButton.Visible = true;
-                            compareSelectedButton.Visible = false;
+                            foreach (string line in list)
+                            {
+                                sw.WriteLine(line);
+                            }
                         }
+                        sw.Close();
+                    }
+                }
+                else
+                {
+                    Result result = new Result();
+                    result.resultText = compare(numbers1, numbers2).ToString();
+                    numbers1 = numbers2 = [[]];
+                    if (result.ShowDialog() == DialogResult.OK)
+                    {
+                        compareButton.Visible = true;
+                        compareSelectedButton.Visible = false;
                     }
                 }
             }
